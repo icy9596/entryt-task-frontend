@@ -1,11 +1,13 @@
-import React from 'react';
+import { RouterProvider } from "react-router-dom";
 
-function App() {
+import router from "./router";
+
+const App = (): JSX.Element => {
   return (
     <div className="app light">
-      INITIAL APP
+      <RouterProvider router={router} />
     </div>
   );
-}
+};
 
 export default App;

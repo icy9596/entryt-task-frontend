@@ -1,10 +1,12 @@
 import { lazy, Suspense } from "react";
 
 import { useCreation } from "@/hooks";
-import Loading from './Loading';
+import Loading from "./Loading";
+
+type Factory = () => Promise<{ default: (...args: any[]) => JSX.Element }>;
 
 interface Props {
-  factory: () => Promise<{ default: (...args: any[]) => JSX.Element }>;
+  factory: Factory;
 }
 
 const LazyComponent = ({ factory }: Props): JSX.Element => {
@@ -19,4 +21,10 @@ const LazyComponent = ({ factory }: Props): JSX.Element => {
   );
 };
 
-export default LazyComponent;
+const lazyCom = (factory: Factory) => {
+  return (): JSX.Element => {
+    return <LazyComponent factory={factory} />;
+  };
+};
+
+export { lazyCom };
