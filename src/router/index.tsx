@@ -7,11 +7,11 @@ const Index = lazyCom(() => import("@/pages/Index"));
 const Login = lazyCom(() => import("@/pages/Login"));
 const Register = lazyCom(() => import("@/pages/Register"));
 
-const router = createBrowserRouter([
+const routes = [
   {
     path: "/",
     element: <BasicLayout />,
-    children: [{ index: true, element: <Index /> }],
+    children: [{ path: "/", title: "首页", index: true, element: <Index /> }],
   },
   {
     path: "/login",
@@ -21,6 +21,8 @@ const router = createBrowserRouter([
     path: "/register",
     element: <Register />,
   },
-]);
+];
 
-export default router;
+const router = createBrowserRouter(routes);
+
+export { routes, router };
