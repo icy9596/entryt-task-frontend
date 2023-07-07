@@ -2,15 +2,18 @@ import { Form, Input, Button } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
+import { useStore as useLoginStore } from '@/store/login';
+
 import styles from "./login.module.less";
 
 const Login = (): JSX.Element => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const { login } = useLoginStore();
 
   const handleLogin = async () => {
     const value = await form.validateFields();
-    console.log(value);
+    login(value);
   };
 
   const handleRegister = () => {
