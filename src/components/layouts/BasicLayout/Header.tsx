@@ -8,7 +8,6 @@ import { useStore } from "@/models/system";
 import styles from "./basic-layout.module.less";
 
 const { Header: LayoutHeader } = Layout;
-
 const USER_MENU_ACTION = {
   exit: "1",
 };
@@ -23,14 +22,12 @@ const Header = (): JSX.Element => {
   const matches = useMatches();
   const pageMatched = matches[matches.length - 1];
   const selectedMenu = [pageMatched.pathname];
-
   const userMenu: MenuProps["items"] = [
     { key: USER_MENU_ACTION.exit, label: "退出", icon: <LogoutOutlined /> },
   ];
 
   const navigate = useNavigate();
   const { currentUser, logout } = useStore();
-  console.log(currentUser);
 
   const handleUserMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
@@ -58,7 +55,7 @@ const Header = (): JSX.Element => {
         <Dropdown menu={{ items: userMenu, onClick: handleUserMenuClick }}>
           <span className={styles["username"]}>
             <UserOutlined className={styles["user-icon"]} />
-            {currentUser ? currentUser.username : ""}
+            {currentUser ? currentUser.username : "未登录"}
           </span>
         </Dropdown>
       </div>
