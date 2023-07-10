@@ -7,7 +7,7 @@ const fetchRegister = (formValues: { username: string; password: string }) => {
 };
 
 const fetchLogin = (formValues: { username: string; password: string }) => {
-  return request.post<{ id: number; token: string; username: string }>(
+  return request.post<{ token: string }>(
     "/users/login",
     {
       data: formValues,

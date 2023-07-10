@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
 import { fetchLogin } from "@/services/auth";
-import { setToken } from '@/utils/helper';
-import { useStore as useSystemStore } from '@/models/system';
+import { setToken, parseTokenToUser } from "@/utils/helper";
+import { useStore as useSystemStore } from "@/models/system";
 
 interface State {
   loading: boolean;
@@ -10,7 +10,6 @@ interface State {
 interface Action {
   setLoading(loading: State["loading"]): void;
   login(formValues: { username: string; password: string }): void;
-  logout(): void;
 }
 type Store = State & Action;
 
@@ -23,15 +22,14 @@ const useStore = create<Store>((set, get) => ({
     const { setLoading } = get();
     try {
       setLoading(true);
-      const user = await fetchLogin(formValues);
-      const { token } = user;
+      const { token } = await fetchLogin(formValues);
       setToken(token);
+      const user = parseTokenToUser(token);
       useSystemStore.getState().setCurrentUser(user);
     } finally {
       setLoading(false);
     }
   },
-  logout() {},
 }));
 
 export { useStore, type Store };

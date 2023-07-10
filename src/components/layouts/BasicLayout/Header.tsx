@@ -1,8 +1,9 @@
 import { Layout, Menu, Dropdown, type MenuProps } from "antd";
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
-import { useMatches } from "react-router-dom";
+import { useMatches, useNavigate } from "react-router-dom";
 
 import { routes } from "@/router";
+import { useStore } from "@/models/system";
 
 import styles from "./basic-layout.module.less";
 
@@ -27,14 +28,21 @@ const Header = (): JSX.Element => {
     { key: USER_MENU_ACTION.exit, label: "退出", icon: <LogoutOutlined /> },
   ];
 
-  const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
-    switch(key) {
-        case USER_MENU_ACTION.exit:
-            handleLogout();
-            break;
+  const navigate = useNavigate();
+  const { currentUser, logout } = useStore();
+  console.log(currentUser);
+
+  const handleUserMenuClick: MenuProps["onClick"] = ({ key }) => {
+    switch (key) {
+      case USER_MENU_ACTION.exit:
+        handleLogout();
+        break;
     }
-  }
-  const handleLogout = () => {}
+  };
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <LayoutHeader className={styles["header"]}>
@@ -50,7 +58,7 @@ const Header = (): JSX.Element => {
         <Dropdown menu={{ items: userMenu, onClick: handleUserMenuClick }}>
           <span className={styles["username"]}>
             <UserOutlined className={styles["user-icon"]} />
-            username
+            {currentUser ? currentUser.username : ""}
           </span>
         </Dropdown>
       </div>
