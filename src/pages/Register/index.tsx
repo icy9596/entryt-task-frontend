@@ -1,8 +1,16 @@
 import { useNavigate } from "react-router-dom";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 
+import { useStore } from "./models/register";
+
 import styles from "./register.module.less";
+
+interface FormValues {
+  username: string;
+  password: string;
+  confirmPassword: string;
+}
 
 const validateUsername = (value: string) => {
   // 字母开头，只允许字母和数字
@@ -11,7 +19,7 @@ const validateUsername = (value: string) => {
 };
 
 const validatePassword = (value: string) => {
-  // 只允许大小写字母+数字组合
+  // 必须大小写字母+数字组合
   const charArr = value.split("");
   const invalidReg = /[^a-zA-Z0-9]/;
   let hasUpper = false;
@@ -29,7 +37,7 @@ const validatePassword = (value: string) => {
   const isNum = (char: string) => {
     return !Number.isNaN(parseInt(char));
   };
-  
+
   if (invalidReg.test(value)) return false;
 
   for (let char of charArr) {
@@ -50,21 +58,30 @@ const validatePassword = (value: string) => {
 
 const Register = (): JSX.Element => {
   const navigate = useNavigate();
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<FormValues>();
+  const { loading, register } = useStore();
+
+  const handleGotoLogin = () => {
+    navigate("/login", { replace: true });
+  };
 
   const handleRegister = async () => {
     const values = await form.validateFields();
-    console.log(values);
-  };
-
-  const handleGotoLogin = () => {
-    navigate("/login");
+    await register(values);
+    message.success("注册成功，将跳转登录页面");
+    setTimeout(() => {
+      handleGotoLogin();
+    }, 1 * 1000);
   };
 
   return (
     <div className={styles["register"]}>
       <div className={styles["title"]}>注册新用户</div>
-      <Form className={styles["form"]} form={form} layout="vertical">
+      <Form
+        className={styles["form"]}
+        form={form}
+        layout="vertical"
+      >
         <Form.Item
           name="username"
           label="用户名"
@@ -96,9 +113,7 @@ const Register = (): JSX.Element => {
             {
               validator: (_, value) => {
                 if (!validatePassword(value)) {
-                  return Promise.reject(
-                    new Error("由大小写字母+数字组合")
-                  );
+                  return Promise.reject(new Error("由大小写字母+数字组合"));
                 }
                 return Promise.resolve();
               },
@@ -111,7 +126,7 @@ const Register = (): JSX.Element => {
           name="confirmPassword"
           label="确认密码"
           validateFirst
-          dependencies={['password']}
+          dependencies={["password"]}
           rules={[
             { required: true, message: "确认密码不能为空" },
             {
@@ -131,6 +146,7 @@ const Register = (): JSX.Element => {
         className={styles["action"]}
         type="primary"
         onClick={handleRegister}
+        loading={loading}
       >
         注册
       </Button>

@@ -1,9 +1,14 @@
 import { message } from "antd";
-import { extend, type ResponseError } from "umi-request";
+import { extend } from "umi-request";
+import type {
+  ResponseError,
+  RequestInterceptor,
+  ResponseInterceptor,
+} from "umi-request";
 
 import * as devConf from "@/config/dev";
 import * as prodConf from "@/config/prod";
-import { getTokenFromStorage, clearToken } from "./helper";
+import { getToken, clearToken } from "./helper";
 
 enum Code {
   success = 0,
@@ -21,6 +26,10 @@ const errorHandler = (error: ResponseError<ResponseData>) => {
     const {
       response: { status, statusText },
     } = error;
+
+    // 来自response拦截器 status = 200，code != 0 的情况
+    if (status === 200) throw error;
+
     switch (status) {
       case 401:
         message.error("认证已过期，请重新认证");
@@ -46,8 +55,8 @@ const inst = extend({
   errorHandler,
 });
 
-inst.interceptors.request.use((url, options) => {
-  const token = getTokenFromStorage();
+const resolveToken: RequestInterceptor = (url, options) => {
+  const token = getToken();
   if (token) {
     options.headers = {
       ...options.headers,
@@ -55,16 +64,32 @@ inst.interceptors.request.use((url, options) => {
     };
   }
   return { url, options };
-});
+};
+inst.interceptors.request.use(resolveToken);
 
-inst.interceptors.response.use(async (response) => {
-  const { code, data, msg } = (await response.clone().json()) as ResponseData;
+class FetchError extends Error {
+  constructor(public response: Response, public code: Code, public data: any) {
+    super("Fetch Error");
+  }
+}
+
+const checkErrorCode: ResponseInterceptor = async (response) => {
+  const { code, msg } = (await response.clone().json()) as ResponseData;
+  if (code !== Code.success) {
+    message.error(msg);
+  }
+  return response;
+};
+const handleResult: ResponseInterceptor = async (response) => {
+  const { code, data } = (await response.clone().json()) as ResponseData;
   if (code === Code.success) {
     return data;
-  } else {
-    message.error(msg);
-    return Promise.reject(new Error(msg || '服务器发生错误'));
   }
-});
+  throw new FetchError(response, code, data);
+};
 
+inst.interceptors.response.use(checkErrorCode);
+inst.interceptors.response.use(handleResult);
+
+export { FetchError };
 export default inst;

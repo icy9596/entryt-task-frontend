@@ -1,19 +1,21 @@
-import { Form, Input, Button } from "antd";
+import { Form, Input, Button, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
-import { useStore as useLoginStore } from '@/store/login';
+import { useStore } from "./models/login";
 
 import styles from "./login.module.less";
 
 const Login = (): JSX.Element => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const { login } = useLoginStore();
+  const { loading, login } = useStore();
 
   const handleLogin = async () => {
     const value = await form.validateFields();
-    login(value);
+    await login(value);
+    message.success("登录成功");
+    navigate('/', { replace: true })
   };
 
   const handleRegister = () => {
@@ -39,7 +41,12 @@ const Login = (): JSX.Element => {
           <Input.Password prefix={<LockOutlined />} />
         </Form.Item>
       </Form>
-      <Button className={styles["action"]} type="primary" onClick={handleLogin}>
+      <Button
+        className={styles["action"]}
+        type="primary"
+        onClick={handleLogin}
+        loading={loading}
+      >
         登录
       </Button>
       <Button
